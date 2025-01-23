@@ -1,0 +1,372 @@
+R-type test instructions: 
+
+LW R2, R1, #0x00001 
+R2 = Mem[R1+ imm5] = Mem[0x0001], 0x0001 -> 8
+0000/1 001 /010 0/1100 --> 0x094c
+
+LW R3, R1, #0x0002 
+R3 = Mem[R1+ imm5] = Mem[0x0002], 0x0002 -> 5
+0001/0 001 /011 0/1100 --> 0x116c
+
+XOR R1, R2, R3
+00 011 010 001 00000 --> 0x1a20
+R1 = R2^R3 = 1000^0101 = 1101 -> d
+
+OR R4, R1, R3
+01 011 001 100 00000 --> 0x5980 
+R4 = R1 | R3 = 1101 -> d
+
+AND R4, R1, R3
+10 011 001 100 00000 --> 0x9980 
+R4 = R1 & R3 = 0101 -> 5
+
+SLL R5, R1, R3
+00 011 001 101 00001 --> 0x19A1 
+R5 = 0x01A0
+
+SUB R5, R2, R3
+01 011 010 101 00010 --> 0x5AA2
+R5 = 0011 -> 3
+
+SRL R6, R1, R3
+01 011 001 110 00001 --> 0x59c1 
+R6 = 0x0000 -> 0
+
+SRA R7, R1, R3
+10 011 001 111 00001 --> 0x99e1 
+R7 = 0x0000 -> 0
+
+ADD R6, R4, R1
+00 001 100 110 00010 --> 0x0cc2
+R6= d+5=18
+
+SLT R6, R4, R1
+10 001 100 110 00010 --> 0x8cc2 
+1
+
+SLTU R6, R4, R1
+11 001 100 110 00010 --> 0xccc2
+1
+
+--------
+
+I-type test instructions: 
+
+ADDI rd,rs1, imm5
+
+ADDI R7, R6, #11100
+1110/0 110 /111 0/0011 --> 0xe6e3
+-> -3
+
+SLTI R7, R4, #11000
+1100/0 100 /111 0/0100 --> 0xc4e4
+
+SLTIU R7, R4, #11000b
+1100/0 100 /111 0/0101 --> 0xc4e5
+
+XORI R7, R4, #00111b
+0011/1 100 /111 0/0110 --> 0x3ce6
+-> 00101 ^ 00111 -> 00010 - 2
+
+ORI R7, R4, #00111b
+0011/1 100 /111 0/0111 --> 0x3ce7
+-> 00101 | 00011 -> 00111 - 7 
+
+ANDI R7, R4, #00111b
+0011/1 100 /111 0/1000 --> 0x3ce8
+-> 00101 & 00111 -> 00101 - 5 
+
+ADDI R4, R4, #01100
+0110/0 100 /100 0/0011 --> 0x6483
+
+SLLI R6, R4, #011b
+00 01/1 100 /110 0/1001 -> 0x1cc9
+
+SRLI R6, R4, #00011b
+0001/1 100 /110 0/1010 -> 0x1cca
+
+SRAI R6, R4, #00011b
+0001/1 100 /110 0/1011 -> 0x1ccb
+
+---
+
+SB-type test instructions: 
+
+SW imm3, rs1, rs2, imm2
+
+SW #011, R5, R6, #01
+01 11/0 101 /011 0/1101 --> 0x756d
+Mem[0x000e] = 0x0002
+
+BEQ #011, R3, R4, #01
+01 10/0 011 /011 0/1110 --> 0x636e
+
+(Rfile updated)
+BNE #011, R3, R4, #01
+01 10/0 011 /011 0/1111 --> 0x636f
+
+BLT #011, R6, R4, #01
+01 10/0 110 /011 1/0000 --> 0x6670
+
+BGE #011, R4, R6, #01
+01 11/0 100 /011 1/0001 --> 0x7471
+
+BLTU #011, R6, R4, #01
+01 10/0 110 /011 1/0010 --> 0x6672
+
+BGEU #011, R4, R6, #01
+01 11/0 100 /011 1/0011 --> 0x7473
+
+----
+
+J-type test instructions: 
+
+J #00000001010
+0000/0001/010 1/0101 --> 0x0155
+
+JAL #00000001100
+0000/0001 /100 1/0101 --> 0x0195
+
+JALR R1,R6,#00001
+0000/1 110 /001 1/0111 --> 0x0e37
+
+LUI #00000001111
+0000/ 0001 /111 1/0100 --> 0x01f4
+
+---
+
+Testing Scenario 1 (Summation of array elements):
+
+ADDI R6,R0,#01
+0000100011000011 --> 0X08C3
+Initialize R6 to 1 (address of the first element in memory)
+
+ADDI R3,R0,#00
+0000000001100011 --> 0X0063
+Initialize the sum (R3) to 0
+
+ADDI R7,R0,#00
+0000000011100011 --> 0X00E3
+Initialize the counter R7 to 0
+
+ADDI R4,R0,#101
+0010100010000011 --> 0X2883
+Initialize R4 to 5 (elements number)
+
+ADDI R5,R6,#00
+0000011010100011 --> 0X06A3
+Initialize R5 (base address) to the address of the first element
+
+LW R2,R6,#00
+0000011001001100 --> 0X064C
+Load the value in the address stored in R6 (first element) into R2
+
+ADD R3,R3,R2
+0001001101100010 --> 0X1362
+Adds the new element stored in R2 to the previous sum in R3
+
+ADDI R5,R5,#10
+0001010110100011 --> 0X15A3
+Increment the base address by 2 during each loop
+
+ADDI R7,R7,#01
+0000111111100011 --> 0X0FE3
+Increment the elements counter by 1 during each loop
+
+SLT R1,R7,R4
+1010011100100010 --> 0XA722
+If the elements count R7 is less than the total elements number R4, set R1 to 1
+
+BEQ #11,R1,R0,#011
+1100000101100010 --> 0XC162
+If R1 equals R0 (both are zeros) then branch to the address of the store instruction
+
+J #11111111011
+1111111100110101 --> 0XFF35
+Jump to the load instruction in address 0X0015 to loop again
+
+SW #000,R3,R6,#00
+0001111000001101 --> 0X1E0D
+Stores the sum in the memory address directly after the last element in the array
+
+---
+
+Testing Scenario 2 (Conditional summation of array elements based on the sign of the element)
+
+
+Pseudo code: 
+# Initialization
+R6 = Address of first element in the array
+R3 = 0   # Positive sum
+R5 = 0   # Negative sum
+R7 = 0   # Loop counter
+R4 = Number of elements in the array
+
+# Loop through the array
+while (R7 < R4): # While the loop counter is less than the total number of elements
+    R2 = Load value from memory at R6  # Load current element into R2
+    
+    if (R2 >= 0): # Check if the element is positive
+        R3 = R3 + R2    # Add to PositiveSum (R3)
+    else: # Else, the element is negative
+        R5 = R5 + R2    # Add to NegativeSum (R5)
+    
+    R6 = R6 + 2 # Move to the next array element (assuming 16-bit elements)
+    R7 = R7 + 1 # Increment loop counter
+
+# Store results in memory
+Store R3 at PositiveSum address
+Store R5 at NegativeSum address
+
+Instructions: 
+
+ADDI R6,R0,#01
+0000100011000011
+0X08C3
+Initialize R6 to 1 (address of the first element in memory)
+
+ADDI R3,R0,#00
+0000000001100011
+0X0063
+Initialize the sum (R3) to 0
+
+ADDI R7,R0,#00
+0000000011100011
+0X00E3
+Initialize the counter R7 to 0
+
+ADDI R4,R0,#101
+0010100010000011
+0X2883
+Initialize R4 to 5 (elements number)
+
+LW R2,R6,#00
+0000011001001100
+0X064C
+Load the value in the address stored in R6 (first element) into R2
+
+BLT #01,R2,R0,#010
+0100001001010000
+0X4250
+Checks if the current element is less than zero, if yes, it branches to a new address PC+10
+
+ADD R3,R3,R2
+0001001101100010
+0X1362
+Adds the new element stored in R2 to the previous sum in R3
+
+ADDI R7,R7,#01
+0000111111100011
+0X0FE3
+Increment the elements counter by 1 during each loop
+
+ADDI R6,R6,#00001
+00000111011000011
+0X0EC3
+Increment R6 by 1 so that it points to the next element in the array
+
+SLT R1,R7,R4
+1010011100100010
+0XA722
+If the elements count R7 is less than the total elements number R4, set R1 to 1
+
+BEQ #11,R1,R0,#011
+0000100011101110
+0X08EE
+If R1 equals R0 (both are zeros) then branch to the address of the store instruction
+
+J #11111111011
+1111111100110101
+0XFF35
+Jump to the load instruction in address 0X0015 to loop again
+
+ADD R5,R5,R2
+0001010110100010
+0X15A2
+If the element is negative, it adds it to R5.
+
+J #11111111001
+1111111011110101
+0XFEF5
+Jumps back to the loop to address 20
+
+SW #000,R3,R6,#00
+0001111000001101
+0X1E0D
+Stores the positive sum in the memory address directly after the last element in the array
+
+SW #001,R5,R6,#00
+0010111000101101
+0X2E2D
+Stores the negative sum after the positive sum
+
+J #00000000000
+0000000000010101
+0X0015
+This instruction terminates the execution of the program by jumping to itself indefinitely
+
+---
+
+Testing Scenario 3 (Swapping Registers) program to demonstrate the usage of stack segment structure and execution on procedures:
+
+0x0 > ADDI R6, R0, #0x1F
+1111/1 000 /110 0/0011 -- F8C3
+initialize R6 stack pointer (SP) 
+
+0x1 > ADDI R1, R0, #01010
+0101/0 000 /001 0/0011 - 5023
+Load R1 with 10
+
+0x2 > ADDI R2, R0, #00010
+0001/0 000 /010 0/0011 - 1043
+Load R2 with 2
+
+0x3 > JAL #101
+0000 /0000 /101 1/0110 - 00B6
+Call SwapSubroutine in 0x8 
+
+0x4 > J #0 - 0015
+HALT
+
+SwapSubroutine:
+
+*Save R1 and R2 to the stack
+0x8 > SW 000, R6, R1, 00
+00 00/1 110 /000 0/1101 - 0E0D
+Push R1 onto the stack
+
+0x9 > ADDI R6, R6, #11111
+1111/1 110 /110 0/0011 - FEC3
+Decrement SP
+
+0xa > SW 000, R6, R2, 00
+00 01/0 110 /000 0/1101 - 160D
+Push R2 onto the stack
+
+0xb > ADDI R6, R6, #11111
+1111/1 110 /110 0/0011 - FEC3
+Decrement SP
+
+*Restore R1 and R2 in reverse order
+0xc > ADDI R6, R6, #1
+0000/1 110 /110 0/0011 - 0EC3
+Increment SP
+
+0xd > LW R1, R6, #0
+0000/0 110 /001 0/1100 - 062C
+Pop R2 into R1
+
+0xe > ADDI R6, R6, #1
+0000/1 110 /110 0/0011 - 0EC3
+Increment SP
+
+0xf > LW R2, R6, #0
+0000/0 110 /010 0/1100 - 064C
+Pop R1 into R2
+
+*Return to main program
+JALR R0, R7, #0000
+0x10 > 0000/0 111 /000 1/0111 - 0717
+Return to main
+
+note: the latter program is the one stored on the instruction memory. 
